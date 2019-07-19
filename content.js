@@ -28,14 +28,31 @@ function populate_captions(response) {
 	}
 	return captions_and_timestamps;
 }
+
+function init() {
+	console.log(document.getElementsByClassName('ytp-subtitles-button ytp-button')[0]);
+	try {
+		console.log("ClICK");
+		let button = document.getElementsByClassName('ytp-subtitles-button ytp-button')[0];
+		if (button.getAttribute("aria-pressed") == "false") {
+			button.click();
+		}
+	} catch(err) {
+		console.log("FAILED");
+	}
+}
 //End of Helper Functions
 
 var captions_and_timestamps = {};
 var Http = new XMLHttpRequest();
 
+window.onload = init;
+
 //Used for downloading, searching captions, and seeking to a time in a video
 //Message passing occurs between content.js and popup.js here
 chrome.runtime.onMessage.addListener(function(response, sender, send_response) {
+	if (response.url != undefined)
+		setTimeout(init, 500);
 	//Populates captions_and_timestamps: called only when youtube video cc is turned on
 	if (response.captions != undefined) {
 		Http.onreadystatechange = function() {

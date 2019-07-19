@@ -27,9 +27,10 @@ function add_timestamps(div, tab_id, timestamps, phrases) {
 	for (let i = 0; i < timestamps.length; i++) {
 		let button = document.createElement("button");
 		button.setAttribute("id", "timestamp");
+		button.classList.add('animate-bottom');
 		let timestamp = sec_to_hms(parseInt(timestamps[i]));
 		let timestamp_secs = timestamps[i];
-		button.innerHTML = timestamp.bold() + ": " + phrases[i];
+		button.innerHTML = timestamp.bold() + ": " + phrases[i] + " (".italics() + (i+1).toString().italics() + "/" + timestamps.length.toString().italics() + ")".italics();
 
 		//User has selected a timestamp button
 		button.addEventListener('click', function(){
@@ -64,6 +65,7 @@ chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
 
 //Disable tab if not youtube video and captions are not enabled
 chrome.tabs.onUpdated.addListener(function(tab_id, change_info, tab) {
+	chrome.tabs.sendMessage(tab_id, {url: change_info.url});
 	if (change_info.url == undefined)
 		return true;
 	chrome.storage.sync.clear(function() {
@@ -131,16 +133,27 @@ function user_input(input) {
 	    });
 	});
 }
+
+function refreshButtons() {
+	let timestamps = document.getElementById("timestamps");
+	while (timestamps.childElementCount > 2) {
+		timestamps.removeChild(timestamps.lastChild);
+	}
+	let loader = document.createElement("div");
+	loader.setAttribute("id", "loader");
+	timestamps.appendChild(loader);
+	setTimeout(user_input, Math.floor(Math.random() * 500) + +250, document.getElementById('phrase-box'));
+}
 //End of Browser Events (Chrome API)
 
 //Main App Buttons
 //Search button click
 document.getElementById('search-button').addEventListener('click', function() { 
-user_input(document.getElementById('phrase-box'));
+	refreshButtons();
 });
 //Enter key pressed
 document.getElementById('phrase-box').addEventListener('keyup', function(event) {
-event.preventDefault();
-if (event.keyCode === 13) 
-    user_input(document.getElementById('phrase-box'));
+	event.preventDefault();
+	if (event.keyCode === 13)
+		refreshButtons();
 });
